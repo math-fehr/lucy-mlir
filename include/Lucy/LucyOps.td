@@ -29,21 +29,32 @@ def LucyNode : LucyOp<"node", [IsolatedFromAbove, RegionKindInterface]> {
 
 def LucyReturnOp : LucyOp<"return", [Terminator]> {
     let summary = "Return operation of a node.";
-    let arguments = (ins I32:$input);
+    let arguments = (ins LegalType:$input);
 
     let assemblyFormat = [{
         $input attr-dict `:` type($input)
     }];
 }
 
-def LucyFooOp : LucyOp<"pre", [NoSideEffect, SameOperandsAndResultType]> {
+def LucyPreOp : LucyOp<"pre", [NoSideEffect, SameOperandsAndResultType]> {
     let summary = "Get the previous value.";
-    let arguments = (ins I32:$input);
-    let results = (outs I32:$res);
+    let arguments = (ins LegalType:$input);
+    let results = (outs LegalType:$res);
 
     let assemblyFormat = [{
         $input attr-dict `:` type($input)
     }];
 }
+
+def LucyFbyOp : LucyOp<"fby", [NoSideEffect, SameOperandsAndResultType]> {
+    let summary = "Get the previous value.";
+    let arguments = (ins LegalType:$firstVal, LegalType:$nextVal);
+    let results = (outs LegalType:$res);
+
+    let assemblyFormat = [{
+        $firstVal $nextVal attr-dict `:` type($firstVal)
+    }];
+}
+
 
 #endif // LUCY_OPS
