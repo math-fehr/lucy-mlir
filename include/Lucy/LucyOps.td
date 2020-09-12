@@ -25,6 +25,7 @@ def LucyNode : LucyOp<"node", [IsolatedFromAbove, RegionKindInterface]> {
 
     let printer = [{ return ::print(p, *this); }];
     let parser = [{ return ::parse$cppClass(parser, result); }];
+    let verifier = [{ return ::verify(*this); }];
 }
 
 def LucyReturnOp : LucyOp<"return", [Terminator]> {
