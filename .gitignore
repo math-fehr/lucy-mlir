@@ -35,6 +35,9 @@ build
 *.out
 *.app
 
+# Language Server Protocol
+.clangd
+
 ### CMake ###
 CMakeLists.txt.user
 CMakeCache.txt
