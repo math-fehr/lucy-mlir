@@ -21,7 +21,7 @@ static void print(OpAsmPrinter &p, LucyNode op) {
           .getValue());
 
   p.printRegion(op.body(),
-                /*printEntryBlockArgs=*/wfalse,
+                /*printEntryBlockArgs=*/false,
                 /*printBlockTerminators=*/true);
 }
 
