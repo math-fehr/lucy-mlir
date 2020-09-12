@@ -16,11 +16,13 @@ using namespace lucy;
 
 static void print(OpAsmPrinter &p, LucyNode op) {
   p << op.getOperationName() << ' ';
-  p.printSymbolName(op.getAttrOfType<StringAttr>(::mlir::SymbolTable::getSymbolAttrName()).getValue());
+  p.printSymbolName(
+      op.getAttrOfType<StringAttr>(::mlir::SymbolTable::getSymbolAttrName())
+          .getValue());
 
   p.printRegion(op.body(),
-                /*printEntryBlockArgs=*/ wfalse,
-                /*printBlockTerminators=*/ true);
+                /*printEntryBlockArgs=*/wfalse,
+                /*printBlockTerminators=*/true);
 }
 
 static ParseResult parseLucyNode(OpAsmParser &parser, OperationState &result) {
@@ -37,8 +39,8 @@ static ParseResult parseLucyNode(OpAsmParser &parser, OperationState &result) {
 }
 
 namespace mlir {
-  namespace lucy {
+namespace lucy {
 #define GET_OP_CLASSES
 #include "Lucy/LucyOps.cpp.inc"
-  } // namespace lucy
+} // namespace lucy
 } // namespace mlir
