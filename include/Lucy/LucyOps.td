@@ -36,16 +36,6 @@ def LucyReturnOp : LucyOp<"return", [Terminator]> {
     }];
 }
 
-def LucyPreOp : LucyOp<"pre", [NoSideEffect, SameOperandsAndResultType]> {
-    let summary = "Get the previous value.";
-    let arguments = (ins LegalType:$input);
-    let results = (outs LegalType:$res);
-
-    let assemblyFormat = [{
-        $input attr-dict `:` type($input)
-    }];
-}
-
 def LucyFbyOp : LucyOp<"fby", [NoSideEffect, SameOperandsAndResultType]> {
     let summary = "Get the previous value.";
     let arguments = (ins LegalType:$firstVal, LegalType:$nextVal);
