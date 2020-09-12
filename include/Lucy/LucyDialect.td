@@ -15,17 +15,23 @@ include "mlir/IR/OpBase.td"
 // Lucy dialect definition.
 //===----------------------------------------------------------------------===//
 
-def Lucy_Dialect : Dialect {
+def LucyDialect : Dialect {
     let name = "lucy";
     let summary = "The high level dialect of a lucy program.";
     let cppNamespace = "lucy";
 }
 
 //===----------------------------------------------------------------------===//
+// Lucy types
+//===----------------------------------------------------------------------===//
+
+def LegalType : AnyTypeOf<[I32, I1]>;
+
+//===----------------------------------------------------------------------===//
 // Base lucy operation definition.
 //===----------------------------------------------------------------------===//
 
-class Lucy_Op<string mnemonic, list<OpTrait> traits = []> :
-        Op<Lucy_Dialect, mnemonic, traits>;
+class LucyOp<string mnemonic, list<OpTrait> traits = []> :
+        Op<LucyDialect, mnemonic, traits>;
 
 #endif // LUCY_DIALECT

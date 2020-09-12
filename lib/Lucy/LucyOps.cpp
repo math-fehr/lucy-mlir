@@ -9,10 +9,36 @@
 #include "Lucy/LucyOps.h"
 #include "Lucy/LucyDialect.h"
 #include "mlir/IR/OpImplementation.h"
+#include "mlir/IR/SymbolTable.h"
+
+using namespace mlir;
+using namespace lucy;
+
+static void print(OpAsmPrinter &p, LucyNode op) {
+  p << op.getOperationName() << ' ';
+  p.printSymbolName(op.getAttrOfType<StringAttr>(::mlir::SymbolTable::getSymbolAttrName()).getValue());
+
+  p.printRegion(op.body(),
+                /*printEntryBlockArgs=*/ wfalse,
+                /*printBlockTerminators=*/ true);
+}
+
+static ParseResult parseLucyNode(OpAsmParser &parser, OperationState &result) {
+  // Parse the node name
+  StringAttr nameAttr;
+  if (parser.parseSymbolName(nameAttr, ::mlir::SymbolTable::getSymbolAttrName(),
+                             result.attributes)) {
+    return failure();
+  };
+
+  // Parse the node body.
+  auto *body = result.addRegion();
+  return parser.parseRegion(*body, /*regionArgs*/ {}, /*argTypes*/ {});
+}
 
 namespace mlir {
-namespace lucy {
+  namespace lucy {
 #define GET_OP_CLASSES
 #include "Lucy/LucyOps.cpp.inc"
-} // namespace lucy
+  } // namespace lucy
 } // namespace mlir

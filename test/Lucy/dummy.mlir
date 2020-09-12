@@ -1,11 +1,10 @@
 // RUN: lucy-opt %s | lucy-opt | FileCheck %s
 
 module {
-    // CHECK-LABEL: func @bar()
-    func @bar() {
+    lucy.node @main {
         %0 = constant 1 : i32
         // CHECK: %{{.*}} = lucy.pre %{{.*}} : i32
-        %res = lucy.pre %0 : i32
-        return
+        %1 = lucy.pre %0 : i32
+        lucy.return %0 : i32
     }
 }
