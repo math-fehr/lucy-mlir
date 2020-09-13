@@ -15,7 +15,7 @@ include "mlir/IR/RegionKindInterface.td"
 include "mlir/IR/SymbolInterfaces.td"
 
 def LucyNode : LucyOp<"node", [IsolatedFromAbove, RegionKindInterface]> {
-    let summary = "A computation node";
+    let summary = "A computation node.";
     let regions = (region SizedRegion<1>:$body);
 
     let extraClassDeclaration = [{
