@@ -9,6 +9,7 @@ set(LUCY_TEST_DEPENDS
         FileCheck count not
         lucy-opt
         lucy-translate
+        obc-opt
         )
 
 add_lit_testsuite(check-lucy "Running the lucy regression tests"
