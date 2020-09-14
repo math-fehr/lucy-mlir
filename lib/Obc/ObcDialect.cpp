@@ -8,6 +8,7 @@
 
 #include "Obc/ObcDialect.h"
 #include "Obc/ObcOps.h"
+#include "Obc/ObcTypes.h"
 
 using namespace mlir;
 using namespace mlir::obc;
@@ -17,6 +18,7 @@ using namespace mlir::obc;
 //===----------------------------------------------------------------------===//
 
 void ObcDialect::initialize() {
+  addTypes<RegisterType>();
   addOperations<
 #define GET_OP_LIST
 #include "Obc/ObcOps.cpp.inc"
