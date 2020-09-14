@@ -10,11 +10,28 @@
 #define OBC_OBCDIALECT_H
 
 #include "mlir/IR/Dialect.h"
+#include "mlir/IR/Function.h"
 
 namespace mlir {
 namespace obc {
 
-#include "Obc/ObcOpsDialect.h.inc"
+class ObcDialect : public Dialect {
+public:
+  explicit ObcDialect(MLIRContext *context);
+
+  static StringRef getDialectNamespace() { return "obc"; }
+  static StringRef getStencilProgramAttrName() { return "obc.program"; }
+
+  static bool isStencilProgram(FuncOp funcOp) {
+    return !!funcOp.getAttr(getStencilProgramAttrName());
+  }
+
+  /// Parses a type registered to this dialect
+  Type parseType(DialectAsmParser &parser) const override;
+
+  /// Print a type registered to this dialect
+  void printType(Type type, DialectAsmPrinter &os) const override;
+};
 
 } // namespace obc
 } // namespace mlir

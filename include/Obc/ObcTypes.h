@@ -14,6 +14,9 @@
 #include "mlir/IR/Types.h"
 #include "llvm/ADT/Hashing.h"
 
+namespace mlir {
+namespace obc {
+
 /// This class represents the internal storage of a single type
 struct WrapperTypeStorage : public mlir::TypeStorage {
   using KeyTy = mlir::Type;
@@ -37,9 +40,7 @@ struct WrapperTypeStorage : public mlir::TypeStorage {
         WrapperTypeStorage(key);
   }
 
-  mlir::Type getUnderlyingType() const {
-    return underlyingType;
-  }
+  mlir::Type getUnderlyingType() const { return underlyingType; }
 
 private:
   /// The following field contains the contained type.
@@ -62,5 +63,8 @@ public:
   /// Return the element type.
   mlir::Type getElementType() { return getImpl()->getUnderlyingType(); }
 };
+
+} // namespace obc
+} // namespace mlir
 
 #endif // OBC_OBCTYPES_H

@@ -14,6 +14,7 @@
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/IR/RegionKindInterface.h"
 #include "mlir/Interfaces/SideEffectInterfaces.h"
+#include "Obc/ObcTypes.h"
 
 namespace mlir {
 namespace obc {

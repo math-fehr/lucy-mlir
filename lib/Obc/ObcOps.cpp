@@ -8,6 +8,7 @@
 
 #include "Obc/ObcOps.h"
 #include "Obc/ObcDialect.h"
+#include "mlir/IR/Builders.h"
 #include "mlir/IR/OpImplementation.h"
 #include "mlir/IR/StandardTypes.h"
 #include "mlir/IR/SymbolTable.h"
@@ -17,6 +18,10 @@
 
 using namespace mlir;
 using namespace obc;
+
+//===----------------------------------------------------------------------===//
+// Obc machine
+//===----------------------------------------------------------------------===//
 
 static void print(OpAsmPrinter &p, ObcMachine op) {
   // Print the machine operation name
@@ -46,6 +51,10 @@ static ParseResult parseObcMachine(OpAsmParser &parser,
   auto *body = result.addRegion();
   return parser.parseRegion(*body, /*regionArgs*/ {}, /*argTypes*/ {});
 }
+
+//===----------------------------------------------------------------------===//
+// Obc body
+//===----------------------------------------------------------------------===//
 
 static void print(OpAsmPrinter &p, ObcBody op) {
   // Print the body operation name
