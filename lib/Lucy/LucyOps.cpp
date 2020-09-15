@@ -156,7 +156,7 @@ Optional<TopoResult> topoSortNode(LucyNode node) {
 LogicalResult verify(LucyNode node) {
   if (topoSortNode(node).hasValue())
     return success();
-  return node.emitOpError("unexpected isntantaneous loops");
+  return node.emitOpError("unexpected instantaneous loops");
 }
 
 namespace mlir {
