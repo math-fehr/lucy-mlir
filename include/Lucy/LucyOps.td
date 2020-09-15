@@ -37,6 +37,26 @@ def LucyReturnOp : LucyOp<"return", [Terminator]> {
     }];
 }
 
+def LucyWhenOp : LucyOp<"when", [NoSideEffect, AllTypesMatch<["res", "var"]>]> {
+    let summary = "Sample a stream on a clock";
+    let arguments = (ins LegalType:$var, I1:$ck);
+    let results = (outs LegalType:$res);
+
+    let assemblyFormat = [{
+        $var $ck attr-dict `:` type($var)
+    }];
+}
+
+def LucyMergeOp : LucyOp<"merge", [NoSideEffect, AllTypesMatch<["res", "op1", "op2"]>]> {
+    let summary = "Merge two streams on a clock";
+    let arguments = (ins I1:$ck, LegalType:$op1, LegalType:$op2);
+    let results = (outs LegalType:$res);
+
+    let assemblyFormat = [{
+        $ck $op1 $op2 attr-dict `:` type($res)
+    }];
+}
+
 def LucyFbyOp : LucyOp<"fby", [NoSideEffect, SameOperandsAndResultType]> {
     let summary = "Get the previous value.";
     let arguments = (ins LegalType:$firstVal, LegalType:$nextVal);
@@ -46,6 +66,5 @@ def LucyFbyOp : LucyOp<"fby", [NoSideEffect, SameOperandsAndResultType]> {
         $firstVal $nextVal attr-dict `:` type($firstVal)
     }];
 }
-
 
 #endif // LUCY_OPS

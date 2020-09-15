@@ -6,6 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "mlir/IR/Builders.h"
 #include "Lucy/LucyOps.h"
 #include "Lucy/LucyDialect.h"
 #include "mlir/IR/OpImplementation.h"
