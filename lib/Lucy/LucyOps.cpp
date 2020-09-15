@@ -6,45 +6,80 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "mlir/IR/Builders.h"
 #include "Lucy/LucyOps.h"
 #include "Lucy/LucyDialect.h"
+#include "mlir/IR/Builders.h"
 #include "mlir/IR/OpImplementation.h"
 #include "mlir/IR/StandardTypes.h"
 #include "mlir/IR/SymbolTable.h"
+#include "mlir/Support/LogicalResult.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/DenseMap.h"
+#include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
 
 using namespace mlir;
 using namespace lucy;
 
-static void print(OpAsmPrinter &p, LucyNode op) {
+static void print(OpAsmPrinter &printer, LucyNode op) {
   // Print the node operation name
-  p << op.getOperationName() << ' ';
+  printer << op.getOperationName() << ' ';
 
   // Print the node name
-  p.printSymbolName(
+  printer.printSymbolName(
       op.getAttrOfType<StringAttr>(::mlir::SymbolTable::getSymbolAttrName())
           .getValue());
 
+  assert(!op.getRegion().empty());
+
+  Block *body = op.getBody();
+  auto args = body->getArguments();
+
+  if (!args.empty()) {
+    printer << "(";
+    llvm::interleaveComma(args, printer, [&](auto arg) {
+      printer << arg << " : " << arg.getType();
+    });
+    printer << ") ";
+  }
+
   // Print the node body
-  p.printRegion(op.body(),
-                /*printEntryBlockArgs=*/false,
-                /*printBlockTerminators=*/true);
+  printer.printRegion(op.body(),
+                      /*printEntryBlockArgs=*/false,
+                      /*printBlockTerminators=*/true);
 }
 
 static ParseResult parseLucyNode(OpAsmParser &parser, OperationState &result) {
-  // Parse the node name
+  // Parse the node"" name
   StringAttr nameAttr;
   if (parser.parseSymbolName(nameAttr, ::mlir::SymbolTable::getSymbolAttrName(),
                              result.attributes)) {
     return failure();
   };
 
+  SmallVector<OpAsmParser::OperandType, 10> operands;
+  SmallVector<Type, 10> types;
+
+  // Parse the operands
+  if (succeeded(parser.parseOptionalLParen())) {
+    do {
+      OpAsmParser::OperandType operand;
+      Type type;
+
+      if (parser.parseRegionArgument(operand) || parser.parseColonType(type))
+        return failure();
+
+      operands.push_back(operand);
+      types.push_back(type);
+    } while (succeeded(parser.parseOptionalComma()));
+
+    if (failed(parser.parseRParen()))
+      return failure();
+  }
+
   // Parse the node body.
   auto *body = result.addRegion();
-  return parser.parseRegion(*body, /*regionArgs*/ {}, /*argTypes*/ {});
+  return parser.parseRegion(*body, operands, types);
 }
 
 enum class TopoOpState {

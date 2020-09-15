@@ -20,7 +20,11 @@ def LucyNode : LucyOp<"node", [IsolatedFromAbove, RegionKindInterface]> {
 
     let extraClassDeclaration = [{
       // Implement RegionKindInterface
-      static RegionKind getRegionKind(unsigned index) { return RegionKind::Graph; }
+      static RegionKind getRegionKind(unsigned index) {
+        return RegionKind::Graph;
+      }
+
+      Block *getBody() { return &getRegion().front(); }
     }];
 
     let printer = [{ return ::print(p, *this); }];
