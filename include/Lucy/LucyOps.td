@@ -43,11 +43,11 @@ def LucyReturnOp : LucyOp<"return", [Terminator, HasParent<"LucyNode">]> {
 
 def LucyWhenOp : LucyOp<"when", [NoSideEffect, AllTypesMatch<["res", "var"]>, HasParent<"LucyNode">]> {
     let summary = "Sample a stream on a clock";
-    let arguments = (ins LegalType:$var, I1:$ck);
+    let arguments = (ins UnitAttr:$is_when_not, LegalType:$var, I1:$ck);
     let results = (outs LegalType:$res);
 
     let assemblyFormat = [{
-        $var `,` $ck attr-dict `:` type($var)
+        (`not` $is_when_not^)? $var `,` $ck attr-dict `:` type($var)
     }];
 }
 
