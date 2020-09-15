@@ -28,7 +28,7 @@ def LucyNode : LucyOp<"node", [IsolatedFromAbove, RegionKindInterface]> {
     let verifier = [{ return ::verify(*this); }];
 }
 
-def LucyReturnOp : LucyOp<"return", [Terminator]> {
+def LucyReturnOp : LucyOp<"return", [Terminator, HasParent<"LucyNode">]> {
     let summary = "Return operation of a node.";
     let arguments = (ins LegalType:$input);
 
@@ -37,7 +37,7 @@ def LucyReturnOp : LucyOp<"return", [Terminator]> {
     }];
 }
 
-def LucyWhenOp : LucyOp<"when", [NoSideEffect, AllTypesMatch<["res", "var"]>]> {
+def LucyWhenOp : LucyOp<"when", [NoSideEffect, AllTypesMatch<["res", "var"]>, HasParent<"LucyNode">]> {
     let summary = "Sample a stream on a clock";
     let arguments = (ins LegalType:$var, I1:$ck);
     let results = (outs LegalType:$res);
@@ -47,7 +47,7 @@ def LucyWhenOp : LucyOp<"when", [NoSideEffect, AllTypesMatch<["res", "var"]>]> {
     }];
 }
 
-def LucyMergeOp : LucyOp<"merge", [NoSideEffect, AllTypesMatch<["res", "op1", "op2"]>]> {
+def LucyMergeOp : LucyOp<"merge", [NoSideEffect, AllTypesMatch<["res", "op1", "op2"]>, HasParent<"LucyNode">]> {
     let summary = "Merge two streams on a clock";
     let arguments = (ins I1:$ck, LegalType:$op1, LegalType:$op2);
     let results = (outs LegalType:$res);
@@ -57,7 +57,7 @@ def LucyMergeOp : LucyOp<"merge", [NoSideEffect, AllTypesMatch<["res", "op1", "o
     }];
 }
 
-def LucyFbyOp : LucyOp<"fby", [NoSideEffect, SameOperandsAndResultType]> {
+def LucyFbyOp : LucyOp<"fby", [NoSideEffect, SameOperandsAndResultType, HasParent<"LucyNode">]> {
     let summary = "Get the previous value.";
     let arguments = (ins LegalType:$firstVal, LegalType:$nextVal);
     let results = (outs LegalType:$res);
