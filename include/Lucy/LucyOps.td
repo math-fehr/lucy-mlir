@@ -47,7 +47,7 @@ def LucyWhenOp : LucyOp<"when", [NoSideEffect, AllTypesMatch<["res", "var"]>, Ha
     let results = (outs LegalType:$res);
 
     let assemblyFormat = [{
-        $var $ck attr-dict `:` type($var)
+        $var `,` $ck attr-dict `:` type($var)
     }];
 }
 
@@ -57,7 +57,7 @@ def LucyMergeOp : LucyOp<"merge", [NoSideEffect, AllTypesMatch<["res", "op1", "o
     let results = (outs LegalType:$res);
 
     let assemblyFormat = [{
-        $ck $op1 $op2 attr-dict `:` type($res)
+        $ck `,` $op1 `,` $op2 attr-dict `:` type($res)
     }];
 }
 
@@ -67,7 +67,7 @@ def LucyFbyOp : LucyOp<"fby", [NoSideEffect, SameOperandsAndResultType, HasParen
     let results = (outs LegalType:$res);
 
     let assemblyFormat = [{
-        $firstVal $nextVal attr-dict `:` type($firstVal)
+        $firstVal `,` $nextVal attr-dict `:` type($firstVal)
     }];
 }
 
