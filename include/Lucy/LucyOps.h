@@ -9,6 +9,7 @@
 #ifndef LUCY_LUCYOPS_H
 #define LUCY_LUCYOPS_H
 
+#include "Lucy/LucyDialect.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/FunctionSupport.h"
 #include "mlir/IR/OpDefinition.h"

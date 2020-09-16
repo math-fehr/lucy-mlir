@@ -7,6 +7,7 @@ add_mlir_dialect_library(MLIRLucy
 
         DEPENDS
         MLIRLucyOpsIncGen
+        MLIRLucyInterfacesIncGen
 
 	LINK_LIBS PUBLIC
 	MLIRIR

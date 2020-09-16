@@ -16,6 +16,8 @@ using namespace mlir::lucy;
 // Lucy dialect.
 //===----------------------------------------------------------------------===//
 
+#include "Lucy/LucyInterfaces.cpp.inc"
+
 void LucyDialect::initialize() {
   addOperations<
 #define GET_OP_LIST

@@ -34,4 +34,17 @@ def LegalType : AnyTypeOf<[I32, I1]>;
 class LucyOp<string mnemonic, list<OpTrait> traits = []> :
         Op<LucyDialect, mnemonic, traits>;
 
+def ModifyClock : OpInterface<"ModifyClock"> {
+  let description = [{
+    An operation that has operands/results with different clocks
+  }];
+
+  let methods = [
+    // A simple non-static method with no inputs.
+    InterfaceMethod<"Compute the result clock",
+      "FailureOr<ClockType>", "getResultClock", (ins "ClockTypeCtx&":$ctx)
+    >
+   ];
+}
+
 #endif // LUCY_DIALECT

@@ -41,17 +41,17 @@ def LucyReturnOp : LucyOp<"return", [Terminator, HasParent<"LucyNode">]> {
     }];
 }
 
-def LucyWhenOp : LucyOp<"when", [NoSideEffect, AllTypesMatch<["res", "var"]>, HasParent<"LucyNode">]> {
+def LucyWhenOp : LucyOp<"when", [NoSideEffect, AllTypesMatch<["res", "var"]>, HasParent<"LucyNode">, DeclareOpInterfaceMethods<ModifyClock>]> {
     let summary = "Sample a stream on a clock";
-    let arguments = (ins UnitAttr:$is_when_not, LegalType:$var, I1:$ck);
+    let arguments = (ins UnitAttr:$isWhenNot, LegalType:$var, I1:$ck);
     let results = (outs LegalType:$res);
 
     let assemblyFormat = [{
-        (`not` $is_when_not^)? $var `,` $ck attr-dict `:` type($var)
+        (`not` $isWhenNot^)? $var `,` $ck attr-dict `:` type($var)
     }];
 }
 
-def LucyMergeOp : LucyOp<"merge", [NoSideEffect, AllTypesMatch<["res", "op1", "op2"]>, HasParent<"LucyNode">]> {
+def LucyMergeOp : LucyOp<"merge", [NoSideEffect, AllTypesMatch<["res", "op1", "op2"]>, HasParent<"LucyNode">, DeclareOpInterfaceMethods<ModifyClock>]> {
     let summary = "Merge two streams on a clock";
     let arguments = (ins I1:$ck, LegalType:$op1, LegalType:$op2);
     let results = (outs LegalType:$res);
@@ -61,7 +61,7 @@ def LucyMergeOp : LucyOp<"merge", [NoSideEffect, AllTypesMatch<["res", "op1", "o
     }];
 }
 
-def LucyFbyOp : LucyOp<"fby", [NoSideEffect, SameOperandsAndResultType, HasParent<"LucyNode">]> {
+def LucyFbyOp : LucyOp<"fby", [NoSideEffect, SameOperandsAndResultType, HasParent<"LucyNode">, DeclareOpInterfaceMethods<ModifyClock>]> {
     let summary = "Get the previous value.";
     let arguments = (ins LegalType:$firstVal, LegalType:$nextVal);
     let results = (outs LegalType:$res);

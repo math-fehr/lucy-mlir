@@ -9,12 +9,17 @@
 #ifndef LUCY_LUCYDIALECT_H
 #define LUCY_LUCYDIALECT_H
 
+#include "Lucy/Clocks.h"
 #include "mlir/IR/Dialect.h"
+#include "mlir/IR/OpDefinition.h"
 
 namespace mlir {
 namespace lucy {
 
+#define GET_OP_CLASSES
 #include "Lucy/LucyOpsDialect.h.inc"
+
+#include "Lucy/LucyInterfaces.h.inc"
 
 } // namespace lucy
 } // namespace mlir
