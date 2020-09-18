@@ -22,6 +22,14 @@ def ObcMachine : ObcOp<"machine", [IsolatedFromAbove]> {
     let parser = [{ return ::parse$cppClass(parser, result); }];
 }
 
+def ObcStep : ObcOp<"step", [Terminator]> {
+    let summary = "The step function of a machine.";
+    let regions = (region SizedRegion<1>:$body);
+
+    let printer = [{ return ::print(p, *this); }];
+    let parser = [{ return ::parse$cppClass(parser, result); }];
+}
+
 def ObcDeclareReg : ObcOp<"declare_reg"> {
     let summary = "Declare a register.";
     let results = (outs Obc_Register:$res);
@@ -50,14 +58,6 @@ def ObcStore : ObcOp<"store"> {
     let assemblyFormat = [{
         $reg $value attr-dict `:` type($reg) type($value)
     }];
-}
-
-def ObcBody : ObcOp<"body", [Terminator]> {
-    let summary = "The body of a machine.";
-    let regions = (region SizedRegion<1>:$body);
-
-    let printer = [{ return ::print(p, *this); }];
-    let parser = [{ return ::parse$cppClass(parser, result); }];
 }
 
 def ObcReturnOp : ObcOp<"return", [Terminator]> {

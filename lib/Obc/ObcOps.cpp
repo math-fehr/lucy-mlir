@@ -56,7 +56,7 @@ static ParseResult parseObcMachine(OpAsmParser &parser,
 // Obc body
 //===----------------------------------------------------------------------===//
 
-static void print(OpAsmPrinter &p, ObcBody op) {
+static void print(OpAsmPrinter &p, ObcStep op) {
   // Print the body operation name
   p << op.getOperationName() << ' ';
 
@@ -66,7 +66,7 @@ static void print(OpAsmPrinter &p, ObcBody op) {
                 /*printBlockTerminators=*/true);
 }
 
-static ParseResult parseObcBody(OpAsmParser &parser, OperationState &result) {
+static ParseResult parseObcStep(OpAsmParser &parser, OperationState &result) {
   // Parse the region.
   auto *body = result.addRegion();
   return parser.parseRegion(*body, /*regionArgs*/ {}, /*argTypes*/ {});
