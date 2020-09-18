@@ -26,9 +26,7 @@ def ObcDialect : Dialect {
 //===----------------------------------------------------------------------===//
 
 def LegalType : AnyTypeOf<[I32, I1]>;
-
-def Obc_IsRegisterType : CPred<"$_self.isa<::mlir::obc::RegisterType>()">;
-def Obc_Register : Type<Obc_IsRegisterType, "a register">;
+def MemRefLegalType : MemRefOf<[I32, I1]>;
 
 //===----------------------------------------------------------------------===//
 // Base obc operation definition.

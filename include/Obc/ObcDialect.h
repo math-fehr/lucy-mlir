@@ -15,23 +15,8 @@
 namespace mlir {
 namespace obc {
 
-class ObcDialect : public Dialect {
-public:
-  explicit ObcDialect(MLIRContext *context);
-
-  static StringRef getDialectNamespace() { return "obc"; }
-  static StringRef getStencilProgramAttrName() { return "obc.program"; }
-
-  static bool isStencilProgram(FuncOp funcOp) {
-    return !!funcOp.getAttr(getStencilProgramAttrName());
-  }
-
-  /// Parses a type registered to this dialect
-  Type parseType(DialectAsmParser &parser) const override;
-
-  /// Print a type registered to this dialect
-  void printType(Type type, DialectAsmPrinter &os) const override;
-};
+#define GET_OP_CLASSES
+#include "Obc/ObcOpsDialect.h.inc"
 
 } // namespace obc
 } // namespace mlir

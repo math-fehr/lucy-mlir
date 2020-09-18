@@ -22,7 +22,7 @@ def ObcMachine : ObcOp<"machine", [IsolatedFromAbove]> {
     let parser = [{ return ::parse$cppClass(parser, result); }];
 }
 
-def ObcStep : ObcOp<"step", [Terminator]> {
+def ObcStep : ObcOp<"step", [Terminator, AutomaticAllocationScope, HasParent<"ObcMachine">]> {
     let summary = "The step function of a machine.";
     let regions = (region SizedRegion<1>:$body);
 
@@ -30,37 +30,16 @@ def ObcStep : ObcOp<"step", [Terminator]> {
     let parser = [{ return ::parse$cppClass(parser, result); }];
 }
 
-def ObcDeclareReg : ObcOp<"declare_reg"> {
+def ObcDeclareReg : ObcOp<"declare_reg", [HasParent<"ObcMachine">]> {
     let summary = "Declare a register.";
-    let results = (outs Obc_Register:$res);
+    let results = (outs MemRefLegalType:$res);
 
     let assemblyFormat = [{
         attr-dict `:` type($res)
     }];
 }
 
-def ObcLoad : ObcOp<"load"> {
-    let summary = "Load the value of a register.";
-    let arguments = (ins Obc_Register:$reg);
-    let results = (outs LegalType:$res);
-
-    // TODO: find a way to replace `functional-type(...)` by `type($reg)` in ODS
-    let assemblyFormat = [{
-        $reg attr-dict `:` functional-type($reg, results)
-    }];
-}
-
-def ObcStore : ObcOp<"store"> {
-    let summary = "Store a value on a register.";
-    let arguments = (ins Obc_Register:$reg, LegalType:$value);
-
-    // TODO: find a way to remove `type($reg)` in ODS
-    let assemblyFormat = [{
-        $reg $value attr-dict `:` type($reg) type($value)
-    }];
-}
-
-def ObcReturnOp : ObcOp<"return", [Terminator]> {
+def ObcReturnOp : ObcOp<"return", [Terminator, HasParent<"ObcStep">]> {
     let summary = "Return operation of a machine.";
     let arguments = (ins LegalType:$input);
 
