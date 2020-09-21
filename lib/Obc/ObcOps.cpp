@@ -32,6 +32,8 @@ static void print(OpAsmPrinter &p, ObcMachine op) {
       op.getAttrOfType<StringAttr>(::mlir::SymbolTable::getSymbolAttrName())
           .getValue());
 
+  assert(!op.getRegion().empty());
+
   // Print the machine body
   p.printRegion(op.body(),
                 /*printEntryBlockArgs=*/false,
@@ -53,23 +55,112 @@ static ParseResult parseObcMachine(OpAsmParser &parser,
 }
 
 //===----------------------------------------------------------------------===//
-// Obc body
+// Obc machine step
 //===----------------------------------------------------------------------===//
 
-static void print(OpAsmPrinter &p, ObcStep op) {
+static void print(OpAsmPrinter &printer, ObcStep op) {
   // Print the body operation name
-  p << op.getOperationName() << ' ';
+  printer << op.getOperationName() << ' ';
+
+  assert(!op.getRegion().empty());
+
+  Block *body = op.getBody();
+  auto args = body->getArguments();
+
+  if (!args.empty()) {
+    printer << "(";
+    llvm::interleaveComma(args, printer, [&](auto arg) {
+      printer << arg << " : " << arg.getType();
+    });
+    printer << ") ";
+  }
 
   // Print the body
-  p.printRegion(op.body(),
+  printer.printRegion(op.body(),
                 /*printEntryBlockArgs=*/false,
                 /*printBlockTerminators=*/true);
 }
 
 static ParseResult parseObcStep(OpAsmParser &parser, OperationState &result) {
+  SmallVector<OpAsmParser::OperandType, 10> operands;
+  SmallVector<Type, 10> types;
+
+  // Parse the operands
+  if (succeeded(parser.parseOptionalLParen())) {
+    do {
+      OpAsmParser::OperandType operand;
+      Type type;
+
+      if (parser.parseRegionArgument(operand) || parser.parseColonType(type))
+        return failure();
+
+      operands.push_back(operand);
+      types.push_back(type);
+    } while (succeeded(parser.parseOptionalComma()));
+
+    if (failed(parser.parseRParen()))
+      return failure();
+  }
+
   // Parse the region.
   auto *body = result.addRegion();
-  return parser.parseRegion(*body, /*regionArgs*/ {}, /*argTypes*/ {});
+  return parser.parseRegion(*body, operands, types);
+}
+
+//===----------------------------------------------------------------------===//
+// Obc if/then/else
+//===----------------------------------------------------------------------===//
+
+static void print(OpAsmPrinter &p, ObcIte op) {
+  // Print the operation name and the operand
+  p << op.getOperationName() << ' ';
+  p.printOperand(op.getOperand());
+
+  // Print the then region
+  p.printRegion(op.thenReg(),
+                /*printEntryBlockArgs=*/false,
+                /*printBlockTerminators=*/false);
+
+  // Print the else region
+  p.printRegion(op.elseReg(),
+                /*printEntryBlockArgs=*/false,
+                /*printBlockTerminators=*/false);
+}
+
+static ParseResult parseObcIte(OpAsmParser &parser, OperationState &result) {
+  // Parse the operand.
+  OpAsmParser::OperandType operand;
+  auto operandResult = parser.parseOperand(operand);
+  if (failed(operandResult)) {
+    return operandResult;
+  }
+
+
+  SmallVector<Value, 1> operands;
+  auto int1 = IntegerType::get(1, result.getContext());
+  auto loc = operand.location;
+  if (failed(parser.resolveOperand(operand, int1, operands))) {
+    return failure();
+  }
+  result.addOperands(operands);
+
+  // Parse the then region.
+  auto *thenReg = result.addRegion();
+  auto thenRes = parser.parseRegion(*thenReg, /*regionArgs*/ {}, /*argTypes*/ {});
+  if (failed(thenRes)) {
+    return thenRes;
+  }
+  ObcIte::ensureTerminator(*thenReg, parser.getBuilder(), result.location);
+
+  // Parse the else region.
+  auto *elseReg = result.addRegion();
+  auto elseRes = parser.parseRegion(*elseReg, /*regionArgs*/ {}, /*argTypes*/ {});
+  if (failed(elseRes)) {
+    return elseRes;
+  }
+  ObcIte::ensureTerminator(*elseReg, parser.getBuilder(), result.location);
+
+  return success();
 }
 
 namespace mlir {

@@ -26,6 +26,10 @@ def ObcStep : ObcOp<"step", [Terminator, AutomaticAllocationScope, HasParent<"Ob
     let summary = "The step function of a machine.";
     let regions = (region SizedRegion<1>:$body);
 
+    let extraClassDeclaration = [{
+      Block *getBody() { return &getRegion().front(); }
+    }];
+
     let printer = [{ return ::print(p, *this); }];
     let parser = [{ return ::parse$cppClass(parser, result); }];
 }
@@ -37,6 +41,21 @@ def ObcDeclareReg : ObcOp<"declare_reg", [HasParent<"ObcMachine">]> {
     let assemblyFormat = [{
         attr-dict `:` type($res)
     }];
+}
+
+def ObcIteTerminator : ObcOp<"ite_terminator", [Terminator]> {
+    let assemblyFormat = [{
+        attr-dict
+    }];
+}
+
+def ObcIte : ObcOp<"ifthenelse", [SingleBlockImplicitTerminator<"ObcIteTerminator">]> {
+    let summary = "An if/then/else operation.";
+    let arguments = (ins I1:$input);
+    let regions = (region SizedRegion<1>:$thenReg, SizedRegion<1>:$elseReg);
+
+    let printer = [{ return ::print(p, *this); }];
+    let parser = [{ return ::parse$cppClass(parser, result); }];
 }
 
 def ObcReturnOp : ObcOp<"return", [Terminator, HasParent<"ObcStep">]> {
