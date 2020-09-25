@@ -52,6 +52,20 @@ def ObcDeclareReg : ObcOp<"declare_reg", [HasParent<"ObcMachine">]> {
     }];
 }
 
+def ObcGetField : ObcOp<"get_field"> {
+    let summary = "Get the field of a struct.";
+    let results = (outs LegalType:$res);
+
+    let arguments = (ins StructType:$input, I64Attr:$index);
+    let results = (outs LegalType:$output);
+
+    let assemblyFormat = [{
+      $input `[` $index `]` attr-dict `:` type($input) `->` type($output)
+    }];
+
+    let verifier = [{ return ::verify(*this); }];
+}
+
 def ObcIteTerminator : ObcOp<"ite_terminator", [Terminator]> {
     let assemblyFormat = [{
         attr-dict

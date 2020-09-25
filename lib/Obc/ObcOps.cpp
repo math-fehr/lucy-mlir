@@ -185,6 +185,16 @@ static ParseResult parseObcIte(OpAsmParser &parser, OperationState &result) {
   return success();
 }
 
+//===----------------------------------------------------------------------===//
+// Obc GetField
+//===----------------------------------------------------------------------===//
+
+LogicalResult verify(ObcGetField op) {
+  auto structType = op.input().getType().cast<StructType>();
+  auto fieldType = structType.getElementTypes()[op.index()];
+  return success(fieldType == op.getType());
+}
+
 namespace mlir {
 namespace obc {
 #define GET_OP_CLASSES
