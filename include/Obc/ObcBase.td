@@ -35,7 +35,8 @@ def ObcDialect : Dialect {
 // Obc types
 //===----------------------------------------------------------------------===//
 
-def LegalType : AnyTypeOf<[I32, I1]>;
+def StructType : Type<CPred<"$_self.isa<StructType>()">, "Obc struct type">;
+def LegalType : AnyTypeOf<[I32, I1, StructType]>;
 def MemRefLegalType : MemRefOf<[I32, I1]>;
 
 //===----------------------------------------------------------------------===//
