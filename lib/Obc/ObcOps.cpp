@@ -195,6 +195,16 @@ LogicalResult verify(ObcGetField op) {
   return success(fieldType == op.getType());
 }
 
+//===----------------------------------------------------------------------===//
+// Obc SetField
+//===----------------------------------------------------------------------===//
+
+LogicalResult verify(ObcSetField op) {
+  auto structType = op.input().getType().cast<StructType>();
+  auto fieldType = structType.getElementTypes()[op.index()];
+  return success(fieldType == op.value().getType());
+}
+
 namespace mlir {
 namespace obc {
 #define GET_OP_CLASSES

@@ -66,6 +66,17 @@ def ObcGetField : ObcOp<"get_field"> {
     let verifier = [{ return ::verify(*this); }];
 }
 
+def ObcSetField : ObcOp<"set_field"> {
+    let summary = "Set the field of a struct.";
+    let arguments = (ins StructType:$input, I64Attr:$index, LegalType:$value);
+
+    let assemblyFormat = [{
+      $input `[` $index `]` `,` $value attr-dict `:` type($input) `,` type($value)
+    }];
+
+    let verifier = [{ return ::verify(*this); }];
+}
+
 def ObcIteTerminator : ObcOp<"ite_terminator", [Terminator]> {
     let assemblyFormat = [{
         attr-dict
