@@ -23,6 +23,27 @@ using namespace obc;
 // Obc machine
 //===----------------------------------------------------------------------===//
 
+ObcStep ObcMachine::getStepOp() {
+  auto *bodyReg = getBody();
+  for (auto &op : *bodyReg) {
+    if (auto stepOp = dyn_cast<ObcStep>(op)) {
+      return stepOp;
+    }
+  }
+  emitOpError(
+      "Machine operations should have a step operation inside the body region");
+}
+
+bool ObcMachine::hasState() {
+  auto *bodyReg = getBody();
+  for (auto &op : *bodyReg) {
+    if (isa<ObcStep>(op)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 static void print(OpAsmPrinter &p, ObcMachine op) {
   // Print the machine operation name
   p << op.getOperationName() << ' ';
@@ -77,8 +98,8 @@ static void print(OpAsmPrinter &printer, ObcStep op) {
 
   // Print the body
   printer.printRegion(op.body(),
-                /*printEntryBlockArgs=*/false,
-                /*printBlockTerminators=*/true);
+                      /*printEntryBlockArgs=*/false,
+                      /*printBlockTerminators=*/true);
 }
 
 static ParseResult parseObcStep(OpAsmParser &parser, OperationState &result) {
@@ -135,7 +156,6 @@ static ParseResult parseObcIte(OpAsmParser &parser, OperationState &result) {
     return operandResult;
   }
 
-
   SmallVector<Value, 1> operands;
   auto int1 = IntegerType::get(1, result.getContext());
   auto loc = operand.location;
@@ -146,7 +166,8 @@ static ParseResult parseObcIte(OpAsmParser &parser, OperationState &result) {
 
   // Parse the then region.
   auto *thenReg = result.addRegion();
-  auto thenRes = parser.parseRegion(*thenReg, /*regionArgs*/ {}, /*argTypes*/ {});
+  auto thenRes =
+      parser.parseRegion(*thenReg, /*regionArgs*/ {}, /*argTypes*/ {});
   if (failed(thenRes)) {
     return thenRes;
   }
@@ -154,7 +175,8 @@ static ParseResult parseObcIte(OpAsmParser &parser, OperationState &result) {
 
   // Parse the else region.
   auto *elseReg = result.addRegion();
-  auto elseRes = parser.parseRegion(*elseReg, /*regionArgs*/ {}, /*argTypes*/ {});
+  auto elseRes =
+      parser.parseRegion(*elseReg, /*regionArgs*/ {}, /*argTypes*/ {});
   if (failed(elseRes)) {
     return elseRes;
   }
