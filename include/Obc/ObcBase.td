@@ -19,6 +19,16 @@ def ObcDialect : Dialect {
     let name = "obc";
     let summary = "The low level dialect of a lucy program.";
     let cppNamespace = "obc";
+
+    let extraClassDeclaration = [{
+        /// Parse an instance of a type registered to the toy dialect.
+        mlir::Type parseType(mlir::DialectAsmParser &parser) const override;
+
+        /// Print an instance of a type registered to the toy dialect.
+        void printType(mlir::Type type,
+                 mlir::DialectAsmPrinter &printer) const override;
+    }];
+
 }
 
 //===----------------------------------------------------------------------===//
