@@ -18,6 +18,15 @@ def ObcMachine : ObcOp<"machine", [IsolatedFromAbove]> {
     let summary = "A state machine.";
     let regions = (region SizedRegion<1>:$body);
 
+    let extraClassDeclaration = [{
+      /// Has the machine declare_reg operations
+      /// Those operations represent the state of the machine
+      bool hasState();
+
+      Block *getBody() { return &body().front(); }
+      ObcStep getStepOp();
+    }];
+
     let printer = [{ return ::print(p, *this); }];
     let parser = [{ return ::parse$cppClass(parser, result); }];
 }
