@@ -33,7 +33,7 @@ def ObcMachine : ObcOp<"machine", [IsolatedFromAbove]> {
 
 def ObcStep : ObcOp<"step", [Terminator, AutomaticAllocationScope, HasParent<"ObcMachine">]> {
     let summary = "The step function of a machine.";
-    let regions = (region SizedRegion<1>:$body);
+    let regions = (region AnyRegion:$body);
 
     let extraClassDeclaration = [{
       Block *getBody() { return &getRegion().front(); }
@@ -68,10 +68,10 @@ def ObcGetField : ObcOp<"get_field"> {
 
 def ObcSetField : ObcOp<"set_field"> {
     let summary = "Set the field of a struct.";
-    let arguments = (ins StructType:$input, I64Attr:$index, LegalType:$value);
+    let arguments = (ins LegalType:$value, StructType:$input, I64Attr:$index);
 
     let assemblyFormat = [{
-      $input `[` $index `]` `,` $value attr-dict `:` type($input) `,` type($value)
+      $value `,` $input `[` $index `]` attr-dict `:` type($input) `,` type($value)
     }];
 
     let verifier = [{ return ::verify(*this); }];
@@ -94,7 +94,7 @@ def ObcIte : ObcOp<"ifthenelse", [SingleBlockImplicitTerminator<"ObcIteTerminato
 
 def ObcReturnOp : ObcOp<"return", [Terminator, HasParent<"ObcStep">]> {
     let summary = "Return operation of a machine.";
-    let arguments = (ins LegalType:$input);
+    let arguments = (ins Variadic<LegalType>:$input);
 
     let assemblyFormat = [{
         $input attr-dict `:` type($input)

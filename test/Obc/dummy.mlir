@@ -1,4 +1,4 @@
-// RUN: obc-opt %s | obc-opt | FileCheck %s
+// RUN: obc-opt %s | obc-opt
 
 module {
     obc.machine @main {
