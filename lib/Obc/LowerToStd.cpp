@@ -31,11 +31,12 @@ using namespace obc;
 namespace {
 
 /// Conversion pattern with state utils memorized
+template <typename OpTy>
 struct StateConversionPattern : public ConversionPattern {
   StateConversionPattern(std::map<ObcDeclareReg, uint32_t> *declareRegsOrder,
                          ObcMachine *machineOp, BlockArgument *stateArg,
                          MLIRContext *ctx)
-      : ConversionPattern(LoadOp::getOperationName(), 1, ctx),
+      : ConversionPattern(OpTy::getOperationName(), 1, ctx),
         declareRegsOrder(declareRegsOrder), machineOp(machineOp),
         stateArg(stateArg) {}
 
@@ -47,7 +48,7 @@ protected:
 };
 
 /// Remove loads of declare_reg and replace them with getFields
-struct ReplaceLoadReg : public StateConversionPattern {
+struct ReplaceLoadReg : public StateConversionPattern<LoadOp> {
 
   using StateConversionPattern::StateConversionPattern;
 
@@ -73,7 +74,7 @@ struct ReplaceLoadReg : public StateConversionPattern {
 };
 
 /// Remove stores of declare_reg and replace them with getFields
-struct ReplaceStoreReg : public StateConversionPattern {
+struct ReplaceStoreReg : public StateConversionPattern<StoreOp> {
 
   using StateConversionPattern::StateConversionPattern;
 
