@@ -14,7 +14,13 @@ include "mlir/Interfaces/SideEffectInterfaces.td"
 include "mlir/IR/RegionKindInterface.td"
 include "mlir/IR/SymbolInterfaces.td"
 
-def ObcMachine : ObcOp<"machine", [IsolatedFromAbove]> {
+def ObcMachineTerminator : ObcOp<"machine_terminator", [Terminator]> {
+    let assemblyFormat = [{
+        attr-dict
+    }];
+}
+
+def ObcMachine : ObcOp<"machine", [IsolatedFromAbove, SingleBlockImplicitTerminator<"ObcMachineTerminator">]> {
     let summary = "A state machine.";
     let regions = (region SizedRegion<1>:$body);
 
@@ -31,7 +37,7 @@ def ObcMachine : ObcOp<"machine", [IsolatedFromAbove]> {
     let parser = [{ return ::parse$cppClass(parser, result); }];
 }
 
-def ObcStep : ObcOp<"step", [Terminator, AutomaticAllocationScope, HasParent<"ObcMachine">]> {
+def ObcStep : ObcOp<"step", [AutomaticAllocationScope, HasParent<"ObcMachine">]> {
     let summary = "The step function of a machine.";
     let regions = (region AnyRegion:$body);
 

@@ -16,12 +16,16 @@
 #include "Obc/Passes.h";
 #include "Obc/Types.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
+#include "mlir/IR/Attributes.h"
 #include "mlir/IR/Block.h"
 #include "mlir/IR/Function.h"
+#include "mlir/IR/Module.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/IR/StandardTypes.h"
+#include "mlir/IR/SymbolTable.h"
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/DialectConversion.h"
+#include <cstddef>
 #include <cstdio>
 
 using namespace mlir;
@@ -226,4 +230,95 @@ struct DeclareRegLoweringPass
 
 std::unique_ptr<OperationPass<ObcMachine>> obc::createDeclareRegLoweringPass() {
   return std::make_unique<DeclareRegLoweringPass>();
+}
+
+namespace {
+
+/// Replace ObcStep operations with FuncOp operations
+struct ConvertStep : public ConversionPattern {
+  ConvertStep(MLIRContext *ctx, ValueTypeRange<OperandRange> *returnTypes)
+      : ConversionPattern(ObcStep::getOperationName(), 1, ctx),
+        returnTypes(returnTypes) {}
+
+  LogicalResult
+  matchAndRewrite(Operation *op, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const final {
+    auto stepOp = cast<ObcStep>(op);
+    auto machineOp = cast<ObcMachine>(stepOp.getParentOp());
+    auto loc = stepOp.getLoc();
+
+    auto fnName =
+        machineOp
+            .getAttrOfType<StringAttr>(::mlir::SymbolTable::getSymbolAttrName())
+            .getValue();
+
+    auto fnType = FunctionType::get(stepOp.getBody()->getArgumentTypes(),
+                                    *returnTypes,
+                                    stepOp.getContext());
+
+    auto funcOp = rewriter.create<FuncOp>(loc, fnName, fnType,
+                                          ArrayRef<NamedAttribute>{});
+    auto *funcOpEntry = funcOp.addEntryBlock();
+    rewriter.mergeBlocks(&stepOp.getRegion().getBlocks().front(), funcOpEntry,
+                         funcOpEntry->getArguments());
+    rewriter.replaceOp(op, {});
+    return success();
+  }
+
+private:
+  ValueTypeRange<OperandRange> *returnTypes;
+};
+
+/// Replace ObcReturnOp operations with ReturnOp
+struct ConvertReturn : public ConversionPattern {
+  ConvertReturn(MLIRContext *ctx)
+      : ConversionPattern(ObcReturnOp::getOperationName(), 1, ctx) {}
+
+  LogicalResult
+  matchAndRewrite(Operation *op, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const final {
+    auto stepOp = cast<ObcReturnOp>(op);
+    auto loc = stepOp.getLoc();
+
+    rewriter.create<ReturnOp>(loc, stepOp.getOperands());
+    rewriter.replaceOp(op, {});
+    return success();
+  }
+};
+
+} // namespace
+
+/// Lower the ObcMachine operations, by placing them in a struct, as operand
+/// of the step function
+struct MachineLoweringPass
+    : public MachineLoweringPassBase<MachineLoweringPass> {
+
+  void runOnOperation() override {
+    auto machineOp = getOperation();
+
+    auto *ctx = machineOp.getContext();
+    OwningRewritePatternList patterns;
+    ConversionTarget target(*ctx);
+
+    auto returnOp =
+        cast<ObcReturnOp>(machineOp.getStepOp().getBody()->getTerminator());
+    auto returnTypes = returnOp.getOperandTypes();
+
+    // We make illegal the declare_reg instructions,
+    // and the load/store that had them as operands
+    target.addLegalDialect<StandardOpsDialect, ObcDialect>();
+    target.addLegalOp<ModuleTerminatorOp, FuncOp>();
+    target.addIllegalOp<ObcStep, ObcReturnOp>();
+
+    patterns.insert<ConvertStep>(ctx, &returnTypes);
+    patterns.insert<ConvertReturn>(ctx);
+
+    auto res = applyFullConversion(machineOp, target, patterns);
+    if (failed(res))
+      signalPassFailure();
+  }
+};
+
+std::unique_ptr<OperationPass<ObcMachine>> obc::createMachineLoweringPass() {
+  return std::make_unique<MachineLoweringPass>();
 }

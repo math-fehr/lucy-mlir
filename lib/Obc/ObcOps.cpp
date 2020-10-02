@@ -58,7 +58,7 @@ static void print(OpAsmPrinter &p, ObcMachine op) {
   // Print the machine body
   p.printRegion(op.body(),
                 /*printEntryBlockArgs=*/false,
-                /*printBlockTerminators=*/true);
+                /*printBlockTerminators=*/false);
 }
 
 static ParseResult parseObcMachine(OpAsmParser &parser,
@@ -72,7 +72,14 @@ static ParseResult parseObcMachine(OpAsmParser &parser,
 
   // Parse the machine body.
   auto *body = result.addRegion();
-  return parser.parseRegion(*body, /*regionArgs*/ {}, /*argTypes*/ {});
+  auto thenRes =
+      parser.parseRegion(*body, /*regionArgs*/ {}, /*argTypes*/ {});
+  if (failed(thenRes))
+    return thenRes;
+
+  ObcMachine::ensureTerminator(*body, parser.getBuilder(), result.location);
+
+  return success();
 }
 
 //===----------------------------------------------------------------------===//
