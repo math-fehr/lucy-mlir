@@ -11,9 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Obc/ObcDialect.h";
-#include "Obc/ObcOps.h";
-#include "Obc/Passes.h";
+#include "Obc/Patterns.h"
+#include "Obc/ObcDialect.h"
+#include "Obc/ObcOps.h"
+#include "Obc/Passes.h"
 #include "Obc/Types.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/Attributes.h"
@@ -260,23 +261,6 @@ struct ConvertStep : public ConversionPattern {
 };
 
 /// Replace ObcReturnOp operations with ReturnOp
-struct ConvertReturn : public ConversionPattern {
-  ConvertReturn(MLIRContext *ctx)
-      : ConversionPattern(ObcReturnOp::getOperationName(), 1, ctx) {}
-
-  LogicalResult
-  matchAndRewrite(Operation *op, ArrayRef<Value> operands,
-                  ConversionPatternRewriter &rewriter) const final {
-    auto stepOp = cast<ObcReturnOp>(op);
-    auto loc = stepOp.getLoc();
-
-    rewriter.create<ReturnOp>(loc, stepOp.getOperands());
-    rewriter.replaceOp(op, {});
-    return success();
-  }
-};
-
-/// Replace ObcReturnOp operations with ReturnOp
 struct ConvertMachine : public ConversionPattern {
   ConvertMachine(MLIRContext *ctx)
       : ConversionPattern(ObcMachine::getOperationName(), 1, ctx) {}
@@ -318,7 +302,7 @@ struct MachineLoweringPass
     target.addIllegalOp<ObcStep, ObcReturnOp, ObcMachine>();
 
     patterns.insert<ConvertStep>(ctx);
-    patterns.insert<ConvertReturn, ConvertMachine>(ctx);
+    patterns.insert<ObcToStdReturnPattern, ConvertMachine>(ctx);
 
     auto res = applyFullConversion(moduleOp, target, patterns);
     if (failed(res))

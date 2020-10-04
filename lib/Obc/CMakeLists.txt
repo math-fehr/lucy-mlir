@@ -9,6 +9,7 @@ add_mlir_dialect_library(MLIRObc
         DEPENDS
         MLIRObcOpsIncGen
         MLIRObcPassesIncGen
+        MLIRObcPatternsIncGen
 
 	LINK_LIBS PUBLIC
 	MLIRIR
