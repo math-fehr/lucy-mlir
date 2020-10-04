@@ -22,4 +22,9 @@ def MachineLoweringPass : Pass<"machine-lowering", "ModuleOp"> {
     let constructor = "mlir::obc::createMachineLoweringPass()";
 }
 
+def IteLoweringPass : Pass<"ite-lowering", "FuncOp"> {
+    let summary = "Lower the ite operation.";
+    let constructor = "mlir::obc::createIteLoweringPass()";
+}
+
 #endif // OBC_PASSES

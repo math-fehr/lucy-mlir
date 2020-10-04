@@ -19,6 +19,7 @@ namespace obc {
 
 std::unique_ptr<OperationPass<ObcMachine>> createDeclareRegLoweringPass();
 std::unique_ptr<OperationPass<ModuleOp>> createMachineLoweringPass();
+std::unique_ptr<OperationPass<FuncOp>> createIteLoweringPass();
 
 #define GEN_PASS_REGISTRATION
 #define GEN_PASS_CLASSES

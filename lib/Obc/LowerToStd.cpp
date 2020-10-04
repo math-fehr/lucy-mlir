@@ -11,10 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "Obc/Patterns.h"
 #include "Obc/ObcDialect.h"
 #include "Obc/ObcOps.h"
 #include "Obc/Passes.h"
+#include "Obc/Patterns.h"
 #include "Obc/Types.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/Attributes.h"
@@ -246,9 +246,10 @@ struct ConvertStep : public ConversionPattern {
     auto stepOp = cast<ObcStep>(op);
     auto loc = stepOp.getLoc();
 
-    auto fnType = FunctionType::get(stepOp.getBody()->getArgumentTypes(),
-                                    stepOp.getBody()->getTerminator()->getOperandTypes(),
-                                    stepOp.getContext());
+    auto fnType =
+        FunctionType::get(stepOp.getBody()->getArgumentTypes(),
+                          stepOp.getBody()->getTerminator()->getOperandTypes(),
+                          stepOp.getContext());
 
     auto funcOp = rewriter.create<FuncOp>(loc, "main_step", fnType,
                                           ArrayRef<NamedAttribute>{});
@@ -312,4 +313,30 @@ struct MachineLoweringPass
 
 std::unique_ptr<OperationPass<ModuleOp>> obc::createMachineLoweringPass() {
   return std::make_unique<MachineLoweringPass>();
+}
+
+/// Lower the ObcIte operations
+struct IteLoweringPass : public IteLoweringPassBase<IteLoweringPass> {
+
+  void runOnOperation() override {
+    auto moduleOp = getOperation();
+
+    auto *ctx = moduleOp.getContext();
+    OwningRewritePatternList patterns;
+    ConversionTarget target(*ctx);
+
+    target.addLegalDialect<StandardOpsDialect, ObcDialect>();
+    target.addLegalOp<ModuleTerminatorOp, FuncOp, ModuleOp, ReturnOp>();
+    target.addIllegalOp<ObcIte>();
+
+    patterns.insert<ReplaceIte>(ctx);
+
+    auto res = applyFullConversion(moduleOp, target, patterns);
+    if (failed(res))
+      signalPassFailure();
+  }
+};
+
+std::unique_ptr<OperationPass<FuncOp>> obc::createIteLoweringPass() {
+  return std::make_unique<IteLoweringPass>();
 }
