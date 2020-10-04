@@ -17,7 +17,7 @@ def DeclareRegLoweringPass : Pass<"declare-reg-lowering", "ObcMachine"> {
     let constructor = "mlir::obc::createDeclareRegLoweringPass()";
 }
 
-def MachineLoweringPass : Pass<"machine-lowering", "ObcMachine"> {
+def MachineLoweringPass : Pass<"machine-lowering", "ModuleOp"> {
     let summary = "Lower the machine operations.";
     let constructor = "mlir::obc::createMachineLoweringPass()";
 }

@@ -236,27 +236,20 @@ namespace {
 
 /// Replace ObcStep operations with FuncOp operations
 struct ConvertStep : public ConversionPattern {
-  ConvertStep(MLIRContext *ctx, ValueTypeRange<OperandRange> *returnTypes)
-      : ConversionPattern(ObcStep::getOperationName(), 1, ctx),
-        returnTypes(returnTypes) {}
+  ConvertStep(MLIRContext *ctx)
+      : ConversionPattern(ObcStep::getOperationName(), 1, ctx) {}
 
   LogicalResult
   matchAndRewrite(Operation *op, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const final {
     auto stepOp = cast<ObcStep>(op);
-    auto machineOp = cast<ObcMachine>(stepOp.getParentOp());
     auto loc = stepOp.getLoc();
 
-    auto fnName =
-        machineOp
-            .getAttrOfType<StringAttr>(::mlir::SymbolTable::getSymbolAttrName())
-            .getValue();
-
     auto fnType = FunctionType::get(stepOp.getBody()->getArgumentTypes(),
-                                    *returnTypes,
+                                    stepOp.getBody()->getTerminator()->getOperandTypes(),
                                     stepOp.getContext());
 
-    auto funcOp = rewriter.create<FuncOp>(loc, fnName, fnType,
+    auto funcOp = rewriter.create<FuncOp>(loc, "main_step", fnType,
                                           ArrayRef<NamedAttribute>{});
     auto *funcOpEntry = funcOp.addEntryBlock();
     rewriter.mergeBlocks(&stepOp.getRegion().getBlocks().front(), funcOpEntry,
@@ -264,9 +257,6 @@ struct ConvertStep : public ConversionPattern {
     rewriter.replaceOp(op, {});
     return success();
   }
-
-private:
-  ValueTypeRange<OperandRange> *returnTypes;
 };
 
 /// Replace ObcReturnOp operations with ReturnOp
@@ -286,6 +276,27 @@ struct ConvertReturn : public ConversionPattern {
   }
 };
 
+/// Replace ObcReturnOp operations with ReturnOp
+struct ConvertMachine : public ConversionPattern {
+  ConvertMachine(MLIRContext *ctx)
+      : ConversionPattern(ObcMachine::getOperationName(), 1, ctx) {}
+
+  LogicalResult
+  matchAndRewrite(Operation *op, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const final {
+    auto machineOp = cast<ObcMachine>(op);
+    auto loc = machineOp.getLoc();
+
+    // Erase the terminator of the machine operation
+    rewriter.eraseOp(machineOp.getBody()->getTerminator());
+
+    // Inline the machine body before the machine operation
+    rewriter.mergeBlockBefore(machineOp.getBody(), op);
+    rewriter.replaceOp(op, {});
+    return success();
+  }
+};
+
 } // namespace
 
 /// Lower the ObcMachine operations, by placing them in a struct, as operand
@@ -294,31 +305,27 @@ struct MachineLoweringPass
     : public MachineLoweringPassBase<MachineLoweringPass> {
 
   void runOnOperation() override {
-    auto machineOp = getOperation();
+    auto moduleOp = getOperation();
 
-    auto *ctx = machineOp.getContext();
+    auto *ctx = moduleOp.getContext();
     OwningRewritePatternList patterns;
     ConversionTarget target(*ctx);
-
-    auto returnOp =
-        cast<ObcReturnOp>(machineOp.getStepOp().getBody()->getTerminator());
-    auto returnTypes = returnOp.getOperandTypes();
 
     // We make illegal the declare_reg instructions,
     // and the load/store that had them as operands
     target.addLegalDialect<StandardOpsDialect, ObcDialect>();
-    target.addLegalOp<ModuleTerminatorOp, FuncOp>();
-    target.addIllegalOp<ObcStep, ObcReturnOp>();
+    target.addLegalOp<ModuleTerminatorOp, FuncOp, ModuleOp, ReturnOp>();
+    target.addIllegalOp<ObcStep, ObcReturnOp, ObcMachine>();
 
-    patterns.insert<ConvertStep>(ctx, &returnTypes);
-    patterns.insert<ConvertReturn>(ctx);
+    patterns.insert<ConvertStep>(ctx);
+    patterns.insert<ConvertReturn, ConvertMachine>(ctx);
 
-    auto res = applyFullConversion(machineOp, target, patterns);
+    auto res = applyFullConversion(moduleOp, target, patterns);
     if (failed(res))
       signalPassFailure();
   }
 };
 
-std::unique_ptr<OperationPass<ObcMachine>> obc::createMachineLoweringPass() {
+std::unique_ptr<OperationPass<ModuleOp>> obc::createMachineLoweringPass() {
   return std::make_unique<MachineLoweringPass>();
 }

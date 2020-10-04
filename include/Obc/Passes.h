@@ -18,7 +18,7 @@ namespace mlir {
 namespace obc {
 
 std::unique_ptr<OperationPass<ObcMachine>> createDeclareRegLoweringPass();
-std::unique_ptr<OperationPass<ObcMachine>> createMachineLoweringPass();
+std::unique_ptr<OperationPass<ModuleOp>> createMachineLoweringPass();
 
 #define GEN_PASS_REGISTRATION
 #define GEN_PASS_CLASSES
